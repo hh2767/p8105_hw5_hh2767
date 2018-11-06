@@ -59,18 +59,11 @@ head(exp_data)
   
 exp_data %>% 
   ggplot(aes(x = week, y = value, group = subject, color = arm)) + 
-  labs(title = "Experiment observations on each subject over time") + 
+  labs(title = "Experiment observations on each subject over time", y = "Observation value") + 
   geom_line() +
   geom_point() +
   theme_bw()  + theme(legend.position = "bottom")
 
-ggplot(aes(x = year, y = n_location, color = location_abbr)) +
-  labs(title = "number of locations observed", y = "number of locations") +
-  geom_line() + geom_point() +
-  theme_bw() + viridis::scale_color_viridis(
-    name = "Location", 
-    discrete = TRUE
-  ) + 
-  theme(legend.position = "bottom")
 ```
 
+From the spaghetti plot, we can see that the observation values of subjects in experimental arm is higher than that of subjects in control arm. In addition, the observation values of subjects in experimental arm kept increasing over time, while the observation values of subjects in control arm remain stable. In other words, the difference between observation value of subjects in experimental arm and that of subjects in control arm became greater over time.
