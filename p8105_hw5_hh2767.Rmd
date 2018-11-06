@@ -36,12 +36,14 @@ So far, I have created a dataframe called "files". It includes two columns:"file
 
 Next, I will:
 
-* Show control arm and subject ID in the dataframe, respectively
+* Show arms and IDs of subjects in the dataframe.
 
 * Tidy the weekly observation data
 
+* Recode the data into informative forms. For example, changing "con" into "control".
+
 ```{r}
-exp_files = 
+exp_data = 
   exp_files %>% 
   separate(file_name, into = c("arm", "subject_id"), sep = "_") %>% 
   separate(subject_id, into = c("subject_id", "remove"), sep = "\\.") %>% 
@@ -49,8 +51,26 @@ exp_files =
   mutate(., arm = recode(.$arm, con = "control", exp = "experiment")) %>% 
   unnest() %>% 
   gather(key = week, value = value, week_1:week_8) %>% 
-  separate(week, into = c("remove", "week"), sep = "_") %>% 
-  select(-remove)
+  mutate(week = str_replace(week, "week_", " "),  
+         subject = str_c(arm, "_", subject_id)) %>% 
+  select(subject, arm, week, value)
+
+head(exp_data)
   
+exp_data %>% 
+  ggplot(aes(x = week, y = value, group = subject, color = arm)) + 
+  labs(title = "Experiment record") + 
+  geom_line() +
+  geom_point() +
+  theme_bw()  + theme(legend.position = "bottom")
+
+ggplot(aes(x = year, y = n_location, color = location_abbr)) +
+  labs(title = "number of locations observed", y = "number of locations") +
+  geom_line() + geom_point() +
+  theme_bw() + viridis::scale_color_viridis(
+    name = "Location", 
+    discrete = TRUE
+  ) + 
+  theme(legend.position = "bottom")
 ```
 
