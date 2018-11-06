@@ -7,5 +7,17 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+#Problem 1
+
+```{r}
+files = list.files(".\\data") %>% 
+  strsplit(split = " ") %>% 
+  tibble() %>% 
+  rename(., file_name = .) %>% 
+  mutate(data = map(.x = files$file_name, ~read_csv(str_c(".\\data\\", .x))))
+
 ```
 
