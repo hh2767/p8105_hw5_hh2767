@@ -12,12 +12,45 @@ library(tidyverse)
 
 #Problem 1
 
+##Read in file names and files
+
+In the following chunk, I will:
+
+* Start with a dataframe containing all file names, using list.file function
+
+* Use purrr::map to read in the data and save it as a new variable in the dataframe
+
 ```{r}
-files = list.files(".\\data") %>% 
+exp_files = list.files(".\\data") %>% 
   strsplit(split = " ") %>% 
   tibble() %>% 
   rename(., file_name = .) %>% 
-  mutate(data = map(.x = files$file_name, ~read_csv(str_c(".\\data\\", .x))))
+  mutate(data = map(.x = file_name, ~read_csv(str_c(".\\data\\", .x)))) 
 
+head(exp_files)
+```
+
+So far, I have created a dataframe called "files". It includes two columns:"file_name" and "data". The "file_name" column shows all the file names, and the "data" colume contains the data in each file corresponding to those file names. 
+
+##Tidy the results
+
+Next, I will:
+
+* Show control arm and subject ID in the dataframe, respectively
+
+* Tidy the weekly observation data
+
+```{r}
+exp_files = 
+  exp_files %>% 
+  separate(file_name, into = c("arm", "subject_id"), sep = "_") %>% 
+  separate(subject_id, into = c("subject_id", "remove"), sep = "\\.") %>% 
+  select(-remove) %>% 
+  mutate(., arm = recode(.$arm, con = "control", exp = "experiment")) %>% 
+  unnest() %>% 
+  gather(key = week, value = value, week_1:week_8) %>% 
+  separate(week, into = c("remove", "week"), sep = "_") %>% 
+  select(-remove)
+  
 ```
 
