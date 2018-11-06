@@ -21,11 +21,11 @@ In the following chunk, I will:
 * Use purrr::map to read in the data and save it as a new variable in the dataframe
 
 ```{r message=FALSE}
-exp_files = list.files(".\\data") %>% 
+exp_files = list.files(".\\data\\data_exp") %>% 
   strsplit(split = " ") %>% 
   tibble() %>% 
   rename(., file_name = .) %>% 
-  mutate(data = map(.x = file_name, ~read_csv(str_c(".\\data\\", .x)))) 
+  mutate(data = map(.x = file_name, ~read_csv(str_c(".\\data\\data_exp\\", .x)))) 
 
 head(exp_files)
 ```
@@ -38,7 +38,7 @@ Next, I will:
 
 * Show arms and IDs of subjects in the dataframe.
 
-* Tidy the weekly observation data
+* Tidy the weekly observation data.
 
 * Recode the data into informative forms. For example, changing "con" into "control".
 
@@ -55,8 +55,25 @@ exp_data =
          subject = str_c(arm, "_", subject_id)) %>% 
   select(subject, arm, week, value)
 
-head(exp_data)
+str(exp_data)
   
+```
+
+The finel dataset is a `r nrow(exp_data)`(rows) * `r ncol(exp_data)`(cols) dataset. It contains four variables: 
+
+* subject, which shows the ids of subjects. 
+
+* arm, which shows whether a subject is in experimental arm or control arm
+
+* week, which shows the time of an observation 
+
+* value, which shows observation value
+
+This dataset is a tidy dataset.
+
+##Making a plot
+
+```{r}
 exp_data %>% 
   ggplot(aes(x = week, y = value, group = subject, color = arm)) + 
   labs(title = "Experiment observations on each subject over time", y = "Observation value") + 
@@ -67,3 +84,28 @@ exp_data %>%
 ```
 
 From the spaghetti plot, we can see that the observation values of subjects in experimental arm is higher than that of subjects in control arm. In addition, the observation values of subjects in experimental arm kept increasing over time, while the observation values of subjects in control arm remain stable. In other words, the difference between observation value of subjects in experimental arm and that of subjects in control arm became greater over time.
+
+#Problem 2
+
+##Read and describe the dataset
+
+```{r}
+homicide = read.csv(".\\data\\homicide-data.csv")
+```
+
+The raw dataset is a `r nrow(homicide)`(rows) * `r ncol(homicide)`(cols) dataset. The dataset contains information about `r nrow(homicide)` homicides occured in the US. The location, time, and information of victims of each homicide are included in the dataset. The dataset also indicates whether the homicides are solved or not.
+
+##Adding variables and tidying the dataset
+
+```{r}
+homicide_summary = homicide %>% 
+  mutate(city_state = str_c(city, ",", state)) %>% 
+  group_by(city_state) %>% 
+  summarize(
+    num_unsolved = sum(disposition %in% c("Open/No arrest", "Closed without arrest")),
+         num_total = n()
+    )
+  
+str(homicide_summary)
+```
+
