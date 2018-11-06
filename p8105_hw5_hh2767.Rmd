@@ -20,7 +20,7 @@ In the following chunk, I will:
 
 * Use purrr::map to read in the data and save it as a new variable in the dataframe
 
-```{r}
+```{r message=FALSE}
 exp_files = list.files(".\\data") %>% 
   strsplit(split = " ") %>% 
   tibble() %>% 
