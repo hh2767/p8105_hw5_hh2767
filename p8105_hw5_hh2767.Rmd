@@ -121,10 +121,32 @@ baltimore_test = prop.test(baltimore_homicide$num_unsolved, baltimore_homicide$n
 
 tibble(
   'estimated proportion' = round(pull(baltimore_test, estimate), 2),
-  'confidence interval' = str_c("[",round(pull(baltimore_test, conf.low), 2), round(pull(baltimore_test, conf.high), 2), "]")
+  'confidence interval' = str_c("[",round(pull(baltimore_test, conf.low), 2),", ", round(pull(baltimore_test, conf.high), 2), "]")
 ) %>% 
   knitr::kable()
+```
 
+##Apply the process above to each of the cities
 
+```{r}
+city_homicide = function(data, city){
+  city_data = data %>%
+    filter(city_state == city)
+  
+  city_test = prop.test(city_data$num_unsolved, city_data$num_total) %>% 
+    broom::tidy()
+  
+  tibble(
+  'estimated proportion' = round(pull(city_test, estimate), 2),
+  CI_low = round(pull(city_test, conf.low), 2), 
+  CI_high = round(pull(city_test, conf.high), 2)
+)
+}
+
+homicide_summary = homicide_summary %>% 
+mutate(homicide_estimate = map(.x = homicide_summary$city_state, ~city_homicide(data = homicide_summary, city = .x))) %>% 
+  unnest()
+
+str(homicide_summary)
 ```
 
