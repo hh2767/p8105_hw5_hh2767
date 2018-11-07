@@ -98,8 +98,10 @@ The raw dataset is a `r nrow(homicide)`(rows) * `r ncol(homicide)`(cols) dataset
 ##Adding variables and tidying the dataset
 
 ```{r}
+homicide = homicide %>% 
+  mutate(city_state = str_c(city, ",", state))
+
 homicide_summary = homicide %>% 
-  mutate(city_state = str_c(city, ",", state)) %>% 
   group_by(city_state) %>% 
   summarize(
     num_unsolved = sum(disposition %in% c("Open/No arrest", "Closed without arrest")),
@@ -107,5 +109,22 @@ homicide_summary = homicide %>%
     )
   
 str(homicide_summary)
+```
+
+```{r}
+ baltimore_homicide = homicide_summary %>% 
+  filter(city_state == "Baltimore,MD")
+  
+baltimore_test = prop.test(baltimore_homicide$num_unsolved, baltimore_homicide$num_total) %>% 
+  broom::tidy()
+
+
+tibble(
+  'estimated proportion' = round(pull(baltimore_test, estimate), 2),
+  'confidence interval' = str_c("[",round(pull(baltimore_test, conf.low), 2), round(pull(baltimore_test, conf.high), 2), "]")
+) %>% 
+  knitr::kable()
+
+
 ```
 
