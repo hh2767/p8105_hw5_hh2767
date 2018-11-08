@@ -35,7 +35,7 @@ exp_files = list.files(".\\data\\data_exp") %>%
   strsplit(split = " ") %>% 
   tibble() %>% 
   rename(., file_name = .) %>% 
-  mutate(data = map(.x = file_name, ~read_csv(str_c(".\\data\\data_exp\\", .x)))) 
+  mutate(data = purrr::map(.x = file_name, ~read_csv(str_c(".\\data\\data_exp\\", .x)))) 
 
 head(exp_files)
 ```
@@ -127,6 +127,10 @@ The location, time, and information of victims of each homicide are included in 
 
 ##Adding variables and tidying the dataset
 
+In the following part, I will:
+* create a sity_state variable which show the city and state of occurence
+* summarize within cities to obtain the total number of homicides and the number of unsolved homicides
+
 ```{r}
 homicide = homicide %>% 
   mutate(city_state = str_c(city, ",", state))
@@ -141,6 +145,12 @@ homicide_summary = homicide %>%
 str(homicide_summary)
 ```
 
+##Use prop.test for Baltimore
+
+In the following chunk, I will:
+* apply prop.test to estimate the proportion of unsolved homicide in Baltimore.
+* apply broom::tidy, and pull the estimated proportion and confidence intervals from the resulting dataframe.
+
 ```{r}
  baltimore_homicide = homicide_summary %>% 
   filter(city_state == "Baltimore,MD")
@@ -151,22 +161,20 @@ baltimore_test = prop.test(baltimore_homicide$num_unsolved, baltimore_homicide$n
 
 tibble(
   city = "Baltimore,MD",
-  'estimated proportion' = round(pull(baltimore_test, estimate), 2),
+  'estimated proportion' = pull(baltimore_test, estimate),
   'confidence interval' = str_c("[",round(pull(baltimore_test, conf.low), 2),", ", round(pull(baltimore_test, conf.high), 2), "]")
 ) %>% 
-  knitr::kable()
+  knitr::kable(digits = 2)
 ```
 
 ##Apply the process above to each of the cities
 
+In this part, I will make use of purrr::map, purrr::map2, list columns and unnest to apply the process shown in the last part to each of the cities.
+
 ```{r}
-city_homicide = function(data, city){
-  city_data = data %>%
-    filter(city_state == city)
-  
-  city_test = prop.test(city_data$num_unsolved, city_data$num_total) %>% 
+city_homicide = function(unsolve, total){
+  city_test = prop.test(unsolve, total) %>% 
     broom::tidy()
-  
   tibble(
   'estimated proportion' = round(pull(city_test, estimate), 2),
   CI_low = round(pull(city_test, conf.low), 2), 
@@ -175,10 +183,34 @@ city_homicide = function(data, city){
 }
 
 homicide_summary = homicide_summary %>% 
-mutate(homicide_estimate = map(.x = homicide_summary$city_state, ~city_homicide(data = homicide_summary, city = .x))) %>% 
+  mutate(homicide_estimate = purrr::map2(num_unsolved, num_total, city_homicide)) %>% 
   unnest()
 
-str(homicide_summary)
+unnest(homicide_summary)
+```
+
+Alternatively, if use purrr::map, we can get the same dataset, as shown below.
+
+```{r}
+# city_homicide = function(data, city){
+#   city_data = data %>%
+#     filter(city_state == city)
+#   
+#   city_test = prop.test(city_data$num_unsolved, city_data$num_total) %>% 
+#     broom::tidy()
+#   
+#   tibble(
+#   'estimated proportion' = round(pull(city_test, estimate), 2),
+#   CI_low = round(pull(city_test, conf.low), 2), 
+#   CI_high = round(pull(city_test, conf.high), 2)
+# )
+# }
+# 
+# homicide_summary = homicide_summary %>% 
+# mutate(homicide_estimate = map(.x = homicide_summary$city_state, ~city_homicide(data = homicide_summary, city = .x))) %>% 
+#   unnest()
+# 
+# str(homicide_summary)
 ```
 
 ```{r}
@@ -190,7 +222,7 @@ homicide_summary %>%
   ggplot(.) +
   geom_point(aes(x = city_state, y = `estimated proportion`), color = "brown1") +
   geom_errorbar( aes(x = city_state, ymin = CI_low, ymax = CI_high)) +
-  labs(title = "Estimated proportion of unsolved homicides in each city", x = "City")
+  labs(title = "Estimated proportion of unsolved homicides in each city", x = "City") +
   theme(axis.text.x = element_text(face = "plain", color = "black", size = 6.5, angle = 90), legend.position = "null")
 ```
 
