@@ -8,6 +8,16 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(rvest)
+library(httr)
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  fig.width = 8,
+  fig.asp = .6,
+  out.width = "90%"
+)
+theme_set(theme_bw() + theme(legend.position = "bottom"))
 ```
 
 #Problem 1
@@ -90,10 +100,30 @@ From the spaghetti plot, we can see that the observation values of subjects in e
 ##Read and describe the dataset
 
 ```{r}
-homicide = read.csv(".\\data\\homicide-data.csv")
+
+homicide = GET("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv") %>% 
+  content("raw") %>% 
+  read_csv
+str(homicide)
+  
 ```
 
-The raw dataset is a `r nrow(homicide)`(rows) * `r ncol(homicide)`(cols) dataset. The dataset contains information about `r nrow(homicide)` homicides occured in the US. The location, time, and information of victims of each homicide are included in the dataset. The dataset also indicates whether the homicides are solved or not.
+The raw dataset contains `r ncol(homicide)` variables and `r nrow(homicide)` observations. It contains information about `r nrow(homicide)` homicides occured in the US. The variables in this dataset are:
+
+* uid: homicide id
+* reported_date: reported date
+* victim_last: last name of victim
+* victim_first: first name of victim
+* victim_race: race of victim
+* victim_age: age of victim
+* victim_sex: sex of victim
+* city: city of the homicides
+* state: state of the homicides
+* lat: occurrence latitude
+* lon: occurence longitude
+* disposition: result of investigation
+
+The location, time, and information of victims of each homicide are included in the dataset. The dataset also indicates whether the homicides are solved or not.
 
 ##Adding variables and tidying the dataset
 
@@ -116,10 +146,11 @@ str(homicide_summary)
   filter(city_state == "Baltimore,MD")
   
 baltimore_test = prop.test(baltimore_homicide$num_unsolved, baltimore_homicide$num_total) %>% 
-  broom::tidy()
+  broom::tidy() 
 
 
 tibble(
+  city = "Baltimore,MD",
   'estimated proportion' = round(pull(baltimore_test, estimate), 2),
   'confidence interval' = str_c("[",round(pull(baltimore_test, conf.low), 2),", ", round(pull(baltimore_test, conf.high), 2), "]")
 ) %>% 
@@ -148,5 +179,18 @@ mutate(homicide_estimate = map(.x = homicide_summary$city_state, ~city_homicide(
   unnest()
 
 str(homicide_summary)
+```
+
+```{r}
+homicide_summary %>% 
+  mutate(prop_unsolve = num_unsolved / num_total) %>% 
+  arrange(prop_unsolve) %>% 
+  #mutate(city_state = factor(city_state, levels = city_state)) %>% 
+  mutate(city_state = forcats::fct_reorder(city_state, prop_unsolve)) %>% 
+  ggplot(.) +
+  geom_point(aes(x = city_state, y = `estimated proportion`), color = "brown1") +
+  geom_errorbar( aes(x = city_state, ymin = CI_low, ymax = CI_high)) +
+  labs(title = "Estimated proportion of unsolved homicides in each city", x = "City")
+  theme(axis.text.x = element_text(face = "plain", color = "black", size = 6.5, angle = 90), legend.position = "null")
 ```
 
