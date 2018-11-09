@@ -213,6 +213,10 @@ Alternatively, if use purrr::map, we can get the same dataset, as shown below.
 # str(homicide_summary)
 ```
 
+#Making plot
+
+In this part, I will use geom_errorbar to make a plot that shows the estimates and CIs of proportion of unsolved homicides for each city. In the plot, cities will be organized according to the proportion of unsolved homicides.
+
 ```{r}
 homicide_summary %>% 
   mutate(prop_unsolve = num_unsolved / num_total) %>% 
