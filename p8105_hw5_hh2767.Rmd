@@ -93,7 +93,7 @@ exp_data %>%
 
 ```
 
-From the spaghetti plot, we can see that the observation values of subjects in experimental arm is higher than that of subjects in control arm. In addition, the observation values of subjects in experimental arm kept increasing over time, while the observation values of subjects in control arm remain stable. In other words, the difference between observation value of subjects in experimental arm and that of subjects in control arm became greater over time.
+From the spaghetti plot, we can see that the observation values of subjects in experimental arm is higher than that of subjects in control arm. In addition, the observation values of subjects in experimental arm kept increasing over time, while the observation values of subjects in control arm remain stable. In other words, the difference between observation value of subjects in experimental arm and that of subjects in control arm was becoming greater over time.
 
 #Problem 2
 
@@ -148,7 +148,9 @@ str(homicide_summary)
 ##Use prop.test for Baltimore
 
 In the following chunk, I will:
+
 * apply prop.test to estimate the proportion of unsolved homicide in Baltimore.
+
 * apply broom::tidy, and pull the estimated proportion and confidence intervals from the resulting dataframe.
 
 ```{r}
@@ -213,7 +215,7 @@ Alternatively, if use purrr::map, we can get the same dataset, as shown below.
 # str(homicide_summary)
 ```
 
-#Making plot
+#Making a plot
 
 In this part, I will use geom_errorbar to make a plot that shows the estimates and CIs of proportion of unsolved homicides for each city. In the plot, cities will be organized according to the proportion of unsolved homicides.
 
