@@ -166,9 +166,9 @@ baltimore_test = prop.test(baltimore_homicide$num_unsolved, baltimore_homicide$n
 tibble(
   city = "Baltimore,MD",
   'estimated proportion' = pull(baltimore_test, estimate),
-  'confidence interval' = str_c("[",round(pull(baltimore_test, conf.low), 2),", ", round(pull(baltimore_test, conf.high), 2), "]")
+  'confidence interval' = str_c("[",round(pull(baltimore_test, conf.low), 3),", ", round(pull(baltimore_test, conf.high), 3), "]")
 ) %>% 
-  knitr::kable(digits = 2)
+  knitr::kable(digits = 3)
 ```
 
 ##Apply the process above to each of the cities
