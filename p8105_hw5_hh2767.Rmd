@@ -128,7 +128,9 @@ The location, time, and information of victims of each homicide are included in 
 ##Adding variables and tidying the dataset
 
 In the following part, I will:
+
 * create a sity_state variable which show the city and state of occurence
+
 * summarize within cities to obtain the total number of homicides and the number of unsolved homicides
 
 ```{r}
